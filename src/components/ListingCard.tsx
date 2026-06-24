@@ -3,18 +3,15 @@ import { Card, Chip, Text } from 'react-native-paper';
 
 import { Listing } from '@/types/api';
 import { formatCurrency } from '@/utils/currency';
+import { listingCover, listingPrice } from '@/utils/listing';
 
 interface Props {
   listing: Listing;
   onPress: () => void;
 }
 
-function imageUri(listing: Listing): string | undefined {
-  return listing.imageUrl ?? listing.images?.[0]?.url;
-}
-
 export function ListingCard({ listing, onPress }: Props) {
-  const uri = imageUri(listing);
+  const uri = listingCover(listing);
   const isAuction = listing.mode === 'AUCTION';
   return (
     <Card style={styles.card} mode="elevated" onPress={onPress}>
@@ -24,15 +21,15 @@ export function ListingCard({ listing, onPress }: Props) {
           {listing.title}
         </Text>
         <Text variant="titleSmall" style={styles.price}>
-          {formatCurrency(listing.price)}
+          {formatCurrency(listingPrice(listing))}
         </Text>
         <View style={styles.row}>
-          {listing.mode ? (
-            <Chip compact icon={isAuction ? 'gavel' : 'tag'}>
-              {isAuction ? 'Subasta' : 'Venta'}
-            </Chip>
+          <Chip compact icon={isAuction ? 'gavel' : 'tag'}>
+            {isAuction ? 'Subasta' : 'Venta'}
+          </Chip>
+          {listing.condition ? (
+            <Chip compact>{listing.condition}</Chip>
           ) : null}
-          {listing.condition ? <Chip compact>{listing.condition}</Chip> : null}
         </View>
       </Card.Content>
     </Card>
