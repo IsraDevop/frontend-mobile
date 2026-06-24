@@ -13,8 +13,7 @@ import { getErrorMessage } from '@/utils/errors';
 
 const STATUS_COLOR: Record<string, string> = {
   PENDING: '#F5A623',
-  CONFIRMED: '#208AEF',
-  COMPLETED: '#2e7d32',
+  CONFIRMED: '#2e7d32',
   CANCELLED: '#c62828',
 };
 
@@ -24,8 +23,6 @@ function statusLabel(status?: OrderStatus): string {
       return 'Pendiente';
     case 'CONFIRMED':
       return 'Confirmada';
-    case 'COMPLETED':
-      return 'Completada';
     case 'CANCELLED':
       return 'Cancelada';
     default:
@@ -72,7 +69,7 @@ function OrderItem({ order, onChanged }: { order: Order; onChanged: () => void }
             {statusLabel(order.status)}
           </Chip>
         </View>
-        <Text variant="bodyMedium">{formatCurrency(order.total ?? order.listing?.price)}</Text>
+        <Text variant="bodyMedium">{formatCurrency(order.amount)}</Text>
         {order.createdAt ? (
           <Text variant="bodySmall" style={styles.date}>
             {formatDate(order.createdAt)}

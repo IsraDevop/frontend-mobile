@@ -17,130 +17,138 @@ export interface RegisterRequest {
   role?: UserRole;
 }
 
-/** Login/register response. Field names are tolerated flexibly in the auth service. */
+/** ResponseAuthDTO — tokens + basic user info. */
 export interface AuthResponse {
-  accessToken?: string;
-  token?: string;
-  refreshToken?: string;
-  tokenType?: string;
-  user?: SessionUser;
-}
-
-export interface SessionUser {
-  id: string | number;
+  accessToken: string;
+  refreshToken: string;
+  userId: number;
   email: string;
   name: string;
   role: UserRole;
 }
 
-export interface UserProfile extends SessionUser {
+/** ResponseUserDTO */
+export interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
   avatarUrl?: string;
   reputation?: number;
   isVerifiedSeller?: boolean;
+  role: UserRole;
 }
 
-export type ListingMode = 'DIRECT' | 'AUCTION' | string;
-export type ListingCondition = 'NEW' | 'USED' | 'LIKE_NEW' | string;
+export type ListingMode = 'FIXED' | 'AUCTION';
+export type ListingStatus = 'ACTIVE' | 'SOLD' | 'CANCELLED';
+export type AuctionStatus = 'ACTIVE' | 'FINISHED' | 'CANCELLED';
+export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED';
 
-export interface ListingImage {
-  id?: string | number;
-  url: string;
-  sortOrder?: number;
+/** ResponseCategoryDTO */
+export interface Category {
+  id: number;
+  name: string;
+  description?: string;
 }
 
+/** ResponseTagDTO */
+export interface Tag {
+  id: number;
+  name: string;
+}
+
+/** ResponseAuctionSummaryDTO — embedded in listings and auction lists. */
+export interface AuctionSummary {
+  id: number;
+  currentPrice?: number;
+  endsAt?: string;
+  status?: AuctionStatus;
+}
+
+/** ResponseListingDTO */
 export interface Listing {
-  id: string | number;
+  id: number;
   title: string;
   description?: string;
-  price?: number;
-  mode?: ListingMode;
-  condition?: ListingCondition;
-  categoryId?: string | number;
-  category?: Category | string;
-  images?: ListingImage[];
-  imageUrl?: string;
-  sellerId?: string | number;
-  sellerName?: string;
-  storeName?: string;
-  status?: string;
-  latitude?: number;
-  longitude?: number;
+  mode: ListingMode;
+  fixedPrice?: number;
+  condition?: string;
+  status?: ListingStatus;
   createdAt?: string;
+  seller?: UserProfile;
+  category?: Category;
+  imageUrls?: string[];
+  auction?: AuctionSummary;
 }
 
-export interface Category {
-  id: string | number;
-  name: string;
-  slug?: string;
+/** ResponseAuctionDTO */
+export interface Auction {
+  id: number;
+  startingPrice?: number;
+  currentPrice?: number;
+  startedAt?: string;
+  endsAt?: string;
+  status?: AuctionStatus;
+  winner?: UserProfile;
+  totalBids?: number;
 }
 
-/** Spring-style paginated response. `content` is the only field we rely on. */
+/** ResponseBidDTO */
+export interface Bid {
+  id: number;
+  amount: number;
+  placedAt?: string;
+  bidder?: UserProfile;
+}
+
+/** ResponseOrderDTO */
+export interface Order {
+  id: number;
+  amount?: number;
+  status?: OrderStatus;
+  createdAt?: string;
+  listing?: Listing;
+  buyer?: UserProfile;
+  seller?: UserProfile;
+}
+
+/** ResponseImageDTO */
+export interface ListingImage {
+  id: number;
+  url: string;
+  sortOrder?: number;
+  listingId?: number;
+}
+
+/** Spring-style paginated response. */
 export interface PageResponse<T> {
   content: T[];
   number?: number;
-  page?: number;
   size?: number;
   totalElements?: number;
   totalPages?: number;
-  last?: boolean;
   first?: boolean;
-}
-
-export interface Auction {
-  id: string | number;
-  listingId: string | number;
-  listing?: Listing;
-  title?: string;
-  startingPrice?: number;
-  currentPrice?: number;
-  endsAt?: string;
-  totalBids?: number;
-  winnerId?: string | number;
-  status?: string;
-  imageUrl?: string;
-}
-
-export interface Bid {
-  id: string | number;
-  auctionId: string | number;
-  amount: number;
-  bidderId?: string | number;
-  bidderName?: string;
-  createdAt?: string;
-}
-
-export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | string;
-
-export interface Order {
-  id: string | number;
-  listingId: string | number;
-  listing?: Listing;
-  buyerId?: string | number;
-  status?: OrderStatus;
-  total?: number;
-  createdAt?: string;
+  last?: boolean;
+  empty?: boolean;
 }
 
 export interface CreateListingRequest {
   title: string;
   description?: string;
-  price: number;
-  mode?: ListingMode;
-  condition?: ListingCondition;
-  categoryId?: string | number;
-  latitude?: number;
-  longitude?: number;
-  storeName?: string;
+  mode: ListingMode;
+  fixedPrice?: number;
+  condition: string;
+  categoryId: number;
+  tags?: string[];
 }
 
 export interface CreateAuctionRequest {
-  listingId: string | number;
+  listingId: number;
   startingPrice: number;
   endsAt: string;
 }
 
 export interface PlaceBidRequest {
-  auctionId: string | number;
+  auctionId: number;
   amount: number;
 }
 

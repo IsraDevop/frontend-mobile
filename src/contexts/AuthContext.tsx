@@ -59,8 +59,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = useCallback(
     async (payload: RegisterRequest) => {
       const res = await authService.register(payload);
-      // Some backends return only the user on register; log in to get tokens.
-      if (!res.accessToken && !res.token) {
+      // Register returns tokens; fall back to login only if it somehow didn't.
+      if (!res.accessToken) {
         await authService.login({
           email: payload.email,
           password: payload.password,

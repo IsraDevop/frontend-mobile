@@ -31,13 +31,12 @@ export default function AuctionDetailScreen() {
     [id],
   );
 
-  const currentPrice =
-    auction?.currentPrice ?? auction?.startingPrice ?? 0;
+  const currentPrice = auction?.currentPrice ?? auction?.startingPrice ?? 0;
 
   const submitBid = async (amount: number) => {
     setSubmitting(true);
     try {
-      await placeBid({ auctionId: id, amount });
+      await placeBid({ auctionId: Number(id), amount });
       showSuccess('¡Puja registrada!');
       refetch();
       refetchBids();
@@ -53,13 +52,14 @@ export default function AuctionDetailScreen() {
     return <ErrorView message={error ?? 'Subasta no encontrada.'} onRetry={refetch} />;
   }
 
-  const ended = timeRemaining(auction.endsAt) === 'Finalizada';
+  const ended =
+    auction.status !== 'ACTIVE' || timeRemaining(auction.endsAt) === 'Finalizada';
   const bids = bidsPage?.content ?? [];
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <Text variant="headlineSmall" style={styles.title}>
-        {auction.title ?? auction.listing?.title ?? `Subasta #${auction.id}`}
+        {`Subasta #${auction.id}`}
       </Text>
 
       <Card mode="elevated">
@@ -70,6 +70,16 @@ export default function AuctionDetailScreen() {
               {formatCurrency(currentPrice)}
             </Text>
           </View>
+          {auction.startingPrice != null ? (
+            <View style={styles.row}>
+              <Text variant="bodySmall" style={styles.muted}>
+                Precio inicial
+              </Text>
+              <Text variant="bodySmall" style={styles.muted}>
+                {formatCurrency(auction.startingPrice)}
+              </Text>
+            </View>
+          ) : null}
           <View style={styles.chips}>
             <Chip icon="clock-outline">
               {ended ? 'Finalizada' : timeRemaining(auction.endsAt)}
@@ -77,10 +87,16 @@ export default function AuctionDetailScreen() {
             {auction.totalBids != null ? (
               <Chip icon="gavel">{`${auction.totalBids} pujas`}</Chip>
             ) : null}
+            {auction.status ? <Chip>{auction.status}</Chip> : null}
           </View>
           {auction.endsAt ? (
             <Text variant="bodySmall" style={styles.muted}>
               Termina: {formatDate(auction.endsAt)}
+            </Text>
+          ) : null}
+          {ended && auction.winner ? (
+            <Text variant="bodyMedium" style={styles.winner}>
+              🏆 Ganador: {auction.winner.name}
             </Text>
           ) : null}
         </Card.Content>
@@ -109,7 +125,7 @@ export default function AuctionDetailScreen() {
           <List.Item
             key={String(bid.id)}
             title={formatCurrency(bid.amount)}
-            description={bid.bidderName ?? formatDate(bid.createdAt)}
+            description={bid.bidder?.name ?? formatDate(bid.placedAt)}
             left={(props) => <List.Icon {...props} icon="gavel" />}
           />
         ))
@@ -130,6 +146,7 @@ const styles = StyleSheet.create({
   price: { color: '#208AEF', fontWeight: '800' },
   chips: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   muted: { opacity: 0.7 },
+  winner: { fontWeight: '700', marginTop: 4 },
   endedNote: { textAlign: 'center', opacity: 0.7, marginVertical: 8 },
   divider: { marginVertical: 8 },
 });

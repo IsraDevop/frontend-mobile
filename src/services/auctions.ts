@@ -1,6 +1,11 @@
 import { api } from '@/services/client';
 import { DEFAULT_PAGE_SIZE } from '@/utils/constants';
-import { Auction, CreateAuctionRequest, PageResponse } from '@/types/api';
+import {
+  Auction,
+  AuctionSummary,
+  CreateAuctionRequest,
+  PageResponse,
+} from '@/types/api';
 
 export interface AuctionQuery {
   page?: number;
@@ -8,11 +13,12 @@ export interface AuctionQuery {
   sort?: string;
 }
 
+/** Active auctions list returns lightweight summaries (id, currentPrice, endsAt, status). */
 export async function listActiveAuctions(
   query: AuctionQuery = {},
   signal?: AbortSignal,
-): Promise<PageResponse<Auction>> {
-  const { data } = await api.get<PageResponse<Auction>>('/auctions', {
+): Promise<PageResponse<AuctionSummary>> {
+  const { data } = await api.get<PageResponse<AuctionSummary>>('/auctions', {
     params: { page: 0, size: DEFAULT_PAGE_SIZE, ...query },
     signal,
   });

@@ -26,7 +26,7 @@ export default function LoginScreen() {
   const submit = async () => {
     const next: typeof errors = {};
     if (!isValidEmail(email)) next.email = 'Ingresa un correo válido.';
-    if (!isValidPassword(password)) next.password = 'Mínimo 6 caracteres.';
+    if (!isValidPassword(password)) next.password = 'Mínimo 8 caracteres.';
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 

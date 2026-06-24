@@ -170,6 +170,7 @@ Utiliza la metodología git flow, crea una rama por cada feature. Crea issues po
 Utiliza github projects y los milestones. 
 Sigue las indicaciones de @DOCS.md
 El backend para este proyecto frontend se encuentra en C:\Users\ALVA\OneDrive\Documentos\Programación\PROYECTO\backend y se encuentra desplegado en https://yala.dpdns.org/api/v1/ 
+
 El frontend web debe estar desplegado en AWS Amplify
 Debe haber un workflow que se dispare cuando haya cambios en main y actualice el frontend mobile via Expo.
 
