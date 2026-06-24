@@ -12,7 +12,7 @@ import { Listing } from '@/types/api';
 
 const MODE_FILTERS: { value: string; label: string }[] = [
   { value: '', label: 'Todos' },
-  { value: 'DIRECT', label: 'Venta directa' },
+  { value: 'FIXED', label: 'Venta directa' },
   { value: 'AUCTION', label: 'Subasta' },
 ];
 

@@ -40,7 +40,6 @@ export function BidForm({ currentPrice, submitting, onSubmit }: Props) {
         value={amount}
         onChangeText={setAmount}
         errorText={error}
-        left={undefined}
       />
       <Button
         mode="contained"

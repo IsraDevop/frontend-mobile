@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorView } from '@/components/ErrorView';
 import { usePaginatedList } from '@/hooks/usePaginatedList';
 import { listActiveAuctions } from '@/services/auctions';
-import { Auction } from '@/types/api';
+import { AuctionSummary } from '@/types/api';
 
 export default function AuctionsScreen() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function AuctionsScreen() {
     error,
     refresh,
     loadMore,
-  } = usePaginatedList<Auction>(fetchPage, []);
+  } = usePaginatedList<AuctionSummary>(fetchPage, []);
 
   return (
     <FlatList

@@ -5,7 +5,7 @@ export function isValidEmail(email: string): boolean {
 }
 
 export function isValidPassword(password: string): boolean {
-  return password.length >= 6;
+  return password.length >= 8;
 }
 
 /** Peruvian DNI: exactly 8 digits. */

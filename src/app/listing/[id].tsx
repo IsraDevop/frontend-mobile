@@ -2,28 +2,27 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Button, Card, Chip, Divider, Text } from 'react-native-paper';
+import { Button, Chip, Divider, HelperText, Text } from 'react-native-paper';
 
 import { ErrorView } from '@/components/ErrorView';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { StoreMap } from '@/components/StoreMap';
 import { useSnackbar } from '@/contexts/SnackbarContext';
 import { useFetch } from '@/hooks/useFetch';
+import { useLocation } from '@/hooks/useLocation';
 import { getListing } from '@/services/listings';
 import { createOrder } from '@/services/orders';
 import { Listing } from '@/types/api';
 import { formatCurrency } from '@/utils/currency';
 import { getErrorMessage } from '@/utils/errors';
-
-function coverUri(listing: Listing): string | undefined {
-  return listing.imageUrl ?? listing.images?.[0]?.url;
-}
+import { listingCover, listingPrice } from '@/utils/listing';
 
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { showSuccess, showError } = useSnackbar();
   const [buying, setBuying] = useState(false);
+  const location = useLocation(false);
 
   const { data: listing, loading, error, refetch } = useFetch<Listing>(
     (signal) => getListing(id, signal),
@@ -49,10 +48,9 @@ export default function ListingDetailScreen() {
     return <ErrorView message={error ?? 'Producto no encontrado.'} onRetry={refetch} />;
   }
 
-  const uri = coverUri(listing);
+  const uri = listingCover(listing);
   const isAuction = listing.mode === 'AUCTION';
-  const hasLocation =
-    listing.latitude != null && listing.longitude != null;
+  const sold = listing.status === 'SOLD' || listing.status === 'CANCELLED';
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -64,21 +62,23 @@ export default function ListingDetailScreen() {
         {listing.title}
       </Text>
       <Text variant="headlineSmall" style={styles.price}>
-        {formatCurrency(listing.price)}
+        {formatCurrency(listingPrice(listing))}
       </Text>
 
       <View style={styles.chips}>
-        {listing.mode ? (
-          <Chip icon={isAuction ? 'gavel' : 'tag'}>
-            {isAuction ? 'Subasta' : 'Venta directa'}
-          </Chip>
-        ) : null}
+        <Chip icon={isAuction ? 'gavel' : 'tag'}>
+          {isAuction ? 'Subasta' : 'Venta directa'}
+        </Chip>
         {listing.condition ? <Chip>{listing.condition}</Chip> : null}
+        {listing.category ? <Chip icon="shape">{listing.category.name}</Chip> : null}
       </View>
 
-      {listing.sellerName ? (
+      {listing.seller ? (
         <Text variant="bodyMedium" style={styles.muted}>
-          Vendedor: {listing.sellerName}
+          Vendedor: {listing.seller.name}
+          {listing.seller.reputation != null
+            ? `  ·  ⭐ ${listing.seller.reputation.toFixed(1)}`
+            : ''}
         </Text>
       ) : null}
 
@@ -89,41 +89,53 @@ export default function ListingDetailScreen() {
         </>
       ) : null}
 
-      {hasLocation ? (
-        <>
-          <Divider style={styles.divider} />
-          <Text variant="titleMedium" style={styles.sectionTitle}>
-            Ubicación de la tienda
-          </Text>
-          <StoreMap
-            coordinate={{
-              latitude: listing.latitude as number,
-              longitude: listing.longitude as number,
-            }}
-            title={listing.storeName ?? listing.title}
-          />
-        </>
-      ) : null}
-
       <Divider style={styles.divider} />
       {isAuction ? (
         <Button
           mode="contained"
           icon="gavel"
-          onPress={() => router.push('/(tabs)/auctions')}
+          disabled={!listing.auction}
+          onPress={() =>
+            listing.auction && router.push(`/auction/${listing.auction.id}`)
+          }
         >
-          Ver subastas
+          {listing.auction ? 'Ver subasta y pujar' : 'Subasta no disponible'}
         </Button>
       ) : (
         <Button
           mode="contained"
           icon="cart"
           loading={buying}
-          disabled={buying}
+          disabled={buying || sold}
           onPress={buy}
         >
-          Comprar ahora
+          {sold ? 'No disponible' : 'Comprar ahora'}
         </Button>
+      )}
+
+      {/* GPS + Google Maps: pickup / meet-up location */}
+      <Divider style={styles.divider} />
+      <Text variant="titleMedium" style={styles.sectionTitle}>
+        Punto de encuentro
+      </Text>
+      {location.coordinate ? (
+        <StoreMap coordinate={location.coordinate} title="Tu ubicación" />
+      ) : (
+        <>
+          <Button
+            mode="outlined"
+            icon="map-marker"
+            loading={location.loading}
+            onPress={location.request}
+          >
+            Ver mi ubicación en el mapa
+          </Button>
+          {location.error ? (
+            <HelperText type="error" visible>
+              {location.error}
+            </HelperText>
+          ) : null}
+        </>
       )}
     </ScrollView>
   );

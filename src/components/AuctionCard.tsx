@@ -1,42 +1,29 @@
 import { StyleSheet, View } from 'react-native';
 import { Card, Chip, Text } from 'react-native-paper';
 
-import { Auction } from '@/types/api';
+import { AuctionSummary } from '@/types/api';
 import { formatCurrency, timeRemaining } from '@/utils/currency';
 
 interface Props {
-  auction: Auction;
+  auction: AuctionSummary;
   onPress: () => void;
 }
 
-function auctionTitle(a: Auction): string {
-  return a.title ?? a.listing?.title ?? `Subasta #${a.id}`;
-}
-
-function auctionImage(a: Auction): string | undefined {
-  return a.imageUrl ?? a.listing?.imageUrl ?? a.listing?.images?.[0]?.url;
-}
-
+/** Active-auction lists return only summary fields (id, currentPrice, endsAt, status). */
 export function AuctionCard({ auction, onPress }: Props) {
-  const uri = auctionImage(auction);
-  const price = auction.currentPrice ?? auction.startingPrice;
+  const ended = auction.status !== 'ACTIVE' || timeRemaining(auction.endsAt) === 'Finalizada';
   return (
     <Card style={styles.card} mode="elevated" onPress={onPress}>
-      {uri ? <Card.Cover source={{ uri }} style={styles.cover} /> : null}
       <Card.Content style={styles.content}>
-        <Text variant="titleMedium" numberOfLines={1}>
-          {auctionTitle(auction)}
-        </Text>
+        <Text variant="titleMedium">{`Subasta #${auction.id}`}</Text>
         <Text variant="titleSmall" style={styles.price}>
-          {formatCurrency(price)}
+          {formatCurrency(auction.currentPrice)}
         </Text>
         <View style={styles.row}>
           <Chip compact icon="clock-outline">
-            {timeRemaining(auction.endsAt) || 'Activa'}
+            {ended ? 'Finalizada' : timeRemaining(auction.endsAt) || 'Activa'}
           </Chip>
-          {auction.totalBids != null ? (
-            <Chip compact icon="gavel">{`${auction.totalBids} pujas`}</Chip>
-          ) : null}
+          {auction.status ? <Chip compact>{auction.status}</Chip> : null}
         </View>
       </Card.Content>
     </Card>
@@ -45,8 +32,7 @@ export function AuctionCard({ auction, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: { marginBottom: 12 },
-  cover: { height: 160 },
-  content: { paddingTop: 12, gap: 4 },
+  content: { gap: 4 },
   price: { fontWeight: '700' },
   row: { flexDirection: 'row', gap: 8, marginTop: 6, flexWrap: 'wrap' },
 });
